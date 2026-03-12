@@ -1,0 +1,15 @@
+name: "Master Security Sweep"
+on: [push, pull_request]
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: "🔑 Secret Scan"
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "🦠 Vulnerability Scan"
+        uses: aquasecurity/trivy-action@master
+        with: {scan-type: 'fs', severity: 'HIGH,CRITICAL', exit-code: '1'}
