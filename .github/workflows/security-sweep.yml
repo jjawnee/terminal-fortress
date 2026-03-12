@@ -1,15 +1,29 @@
 name: "Master Security Sweep"
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 jobs:
-  audit:
+  security-audit:
+    name: "🛡️ Security Scan (johnathan-pixel & jjawnee)"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with: {fetch-depth: 0}
-      - name: "🔑 Secret Scan"
+      - name: "📂 Checkout code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: "🔑 Gitleaks Secret Scan"
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: "🦠 Vulnerability Scan"
+      - name: "🦠 Trivy Vulnerability Scan"
         uses: aquasecurity/trivy-action@master
-        with: {scan-type: 'fs', severity: 'HIGH,CRITICAL', exit-code: '1'}
+        with:
+          scan-type: 'fs'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+      - name: "🧠 Semgrep Logic Scan"
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: "p/security-audit"
